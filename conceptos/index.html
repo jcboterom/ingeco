@@ -1,0 +1,455 @@
+<html><head><base href="." />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Matemáticas Financieras - Interés Simple y Compuesto</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.min.js"></script>
+<style>
+  :root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --background-color: #ecf0f1;
+    --text-color: #2c3e50;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+  }
+
+  .calculator-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .calculator {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  button {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+
+  .result {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f7f9fa;
+    border-radius: 4px;
+  }
+
+  .chart-container {
+    margin-top: 2rem;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .formula {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .comparison {
+    margin-top: 2rem;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+
+  th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    background-color: var(--primary-color);
+    color: white;
+  }
+
+  .concepts {
+    margin-bottom: 2rem;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .concept-tabs {
+    display: flex;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+  }
+
+  .concept-tab {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-weight: bold;
+  }
+
+  .concept-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .concept-content {
+    display: none;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .concept-content.active {
+    display: block;
+  }
+
+  .concept-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .concept-item h3 {
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Calculadora de Interés Simple y Compuesto</h1>
+      <p>Aprende los conceptos básicos de las matemáticas financieras</p>
+    </div>
+
+    <div class="concepts">
+      <h2>Conceptos Teóricos</h2>
+      <div class="concept-tabs">
+        <button class="concept-tab active" onclick="showConcept('simple')">Interés Simple</button>
+        <button class="concept-tab" onclick="showConcept('compound')">Interés Compuesto</button>
+      </div>
+
+      <div id="simple-concepts" class="concept-content active">
+        <div class="concept-item">
+          <h3>Capital Inicial (P)</h3>
+          <p>Es el monto inicial de dinero que se invierte o se presta, también conocido como principal. Este es el punto de partida para el cálculo de intereses.</p>
+        </div>
+        <div class="concept-item">
+          <h3>Tasa de Interés (r)</h3>
+          <p>Es el porcentaje que se cobra o paga por el uso del dinero durante un período determinado. En el interés simple, la tasa se aplica únicamente sobre el capital inicial.</p>
+        </div>
+        <div class="concept-item">
+          <h3>Tiempo (t)</h3>
+          <p>Es el período durante el cual se calcula el interés, generalmente expresado en años. En el interés simple, el interés generado es directamente proporcional al tiempo.</p>
+        </div>
+        <div class="concept-item">
+          <h3>Interés (I)</h3>
+          <p>Es la cantidad de dinero adicional que se genera. En el interés simple, se calcula multiplicando el capital inicial por la tasa de interés y el tiempo (I = P × r × t).</p>
+        </div>
+        <div class="concept-item">
+          <h3>Monto Final</h3>
+          <p>Es la suma del capital inicial más los intereses generados. En el interés simple, se calcula como: Monto = P × (1 + r × t)</p>
+        </div>
+      </div>
+
+      <div id="compound-concepts" class="concept-content">
+        <div class="concept-item">
+          <h3>Capital Inicial (P)</h3>
+          <p>Al igual que en el interés simple, es el monto inicial de la inversión o préstamo.</p>
+        </div>
+        <div class="concept-item">
+          <h3>Tasa de Interés (r)</h3>
+          <p>En el interés compuesto, la tasa se aplica sobre el capital más los intereses acumulados en períodos anteriores, generando un efecto de "interés sobre interés".</p>
+        </div>
+        <div class="concept-item">
+          <h3>Tiempo (t)</h3>
+          <p>Período total de la inversión o préstamo. En el interés compuesto, cada período genera intereses sobre el monto acumulado del período anterior.</p>
+        </div>
+        <div class="concept-item">
+          <h3>Monto Final</h3>
+          <p>Se calcula mediante la fórmula: Monto = P × (1 + r)^t. El crecimiento es exponencial debido a la capitalización de intereses.</p>
+        </div>
+        <div class="concept-item">
+          <h3>Capitalización</h3>
+          <p>Es el proceso por el cual los intereses generados se suman al capital para generar nuevos intereses en el siguiente período, creando un efecto multiplicador.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="calculator-container">
+      <div class="calculator">
+        <h2>Interés Simple</h2>
+        <div class="formula">
+          I = P × r × t<br>
+          Monto Final = P × (1 + r × t)
+        </div>
+        <div class="form-group">
+          <label for="principal-simple">Capital inicial (P)</label>
+          <input type="number" id="principal-simple" value="1000">
+        </div>
+        <div class="form-group">
+          <label for="rate-simple">Tasa de interés anual (r)</label>
+          <input type="number" id="rate-simple" value="5">
+        </div>
+        <div class="form-group">
+          <label for="time-simple">Tiempo en años (t)</label>
+          <input type="number" id="time-simple" value="5">
+        </div>
+        <button onclick="calculateSimple()">Calcular</button>
+        <div id="result-simple" class="result"></div>
+      </div>
+
+      <div class="calculator">
+        <h2>Interés Compuesto</h2>
+        <div class="formula">
+          Monto Final = P × (1 + r)^t
+        </div>
+        <div class="form-group">
+          <label for="principal-compound">Capital inicial (P)</label>
+          <input type="number" id="principal-compound" value="1000">
+        </div>
+        <div class="form-group">
+          <label for="rate-compound">Tasa de interés anual (r)</label>
+          <input type="number" id="rate-compound" value="5">
+        </div>
+        <div class="form-group">
+          <label for="time-compound">Tiempo en años (t)</label>
+          <input type="number" id="time-compound" value="5">
+        </div>
+        <button onclick="calculateCompound()">Calcular</button>
+        <div id="result-compound" class="result"></div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="comparison-chart"></canvas>
+    </div>
+
+    <div class="comparison">
+      <h2>Comparación Año por Año</h2>
+      <table id="comparison-table">
+        <thead>
+          <tr>
+            <th>Año</th>
+            <th>Interés Simple</th>
+            <th>Interés Compuesto</th>
+            <th>Diferencia</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+function formatMoney(amount) {
+    return new Intl.NumberFormat('es-ES', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+}
+
+let comparisonChart;
+
+function calculateSimple() {
+    const principal = parseFloat(document.getElementById('principal-simple').value);
+    const rate = parseFloat(document.getElementById('rate-simple').value) / 100;
+    const time = parseFloat(document.getElementById('time-simple').value);
+    
+    const interest = principal * rate * time;
+    const amount = principal * (1 + rate * time);
+    
+    document.getElementById('result-simple').innerHTML = `
+        Interés generado: $${formatMoney(interest)}<br>
+        Monto final: $${formatMoney(amount)}
+    `;
+    
+    updateChart();
+}
+
+function calculateCompound() {
+    const principal = parseFloat(document.getElementById('principal-compound').value);
+    const rate = parseFloat(document.getElementById('rate-compound').value) / 100;
+    const time = parseFloat(document.getElementById('time-compound').value);
+    
+    const amount = principal * Math.pow(1 + rate, time);
+    const interest = amount - principal;
+    
+    document.getElementById('result-compound').innerHTML = `
+        Interés generado: $${formatMoney(interest)}<br>
+        Monto final: $${formatMoney(amount)}
+    `;
+    
+    updateChart();
+}
+
+function updateChart() {
+    const principal = parseFloat(document.getElementById('principal-simple').value);
+    const rate = parseFloat(document.getElementById('rate-simple').value) / 100;
+    const time = parseFloat(document.getElementById('time-simple').value);
+    
+    const years = Array.from({length: time + 1}, (_, i) => i);
+    const simpleData = years.map(t => principal * (1 + rate * t));
+    const compoundData = years.map(t => principal * Math.pow(1 + rate, t));
+    
+    updateComparisonTable(years, simpleData, compoundData);
+    
+    if (comparisonChart) {
+        comparisonChart.destroy();
+    }
+    
+    const ctx = document.getElementById('comparison-chart').getContext('2d');
+    comparisonChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [{
+                label: 'Interés Simple',
+                data: simpleData,
+                borderColor: '#3498db',
+                fill: false
+            }, {
+                label: 'Interés Compuesto',
+                data: compoundData,
+                borderColor: '#e74c3c',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Comparación de Crecimiento'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Monto ($)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Años'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateComparisonTable(years, simpleData, compoundData) {
+    const tbody = document.querySelector('#comparison-table tbody');
+    tbody.innerHTML = '';
+    
+    years.forEach((year, index) => {
+        const row = document.createElement('tr');
+        const difference = compoundData[index] - simpleData[index];
+        
+        row.innerHTML = `
+            <td>${year}</td>
+            <td>$${formatMoney(simpleData[index])}</td>
+            <td>$${formatMoney(compoundData[index])}</td>
+            <td>$${formatMoney(difference)}</td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+function showConcept(type) {
+    document.querySelectorAll('.concept-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.concept-content').forEach(content => content.classList.remove('active'));
+    
+    document.querySelector(`.concept-tab:nth-child(${type === 'simple' ? '1' : '2'})`).classList.add('active');
+    document.getElementById(`${type}-concepts`).classList.add('active');
+}
+
+// Inicializar la calculadora
+calculateSimple();
+calculateCompound();
+</script>
+
+</body></html>
