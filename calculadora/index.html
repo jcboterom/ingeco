@@ -1,0 +1,420 @@
+<html><head><base href="https://cdn.jsdelivr.net/gh/library" />
+<title>Calculadora de Interés Simple y Compuesto</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    h1, h2, h3 {
+        color: #2c3e50;
+        text-align: center;
+    }
+
+    .calculator {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #34495e;
+        font-weight: bold;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 8px;
+        border: 2px solid #dce4ec;
+        border-radius: 4px;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+        width: 100%;
+    }
+
+    button:hover {
+        background: #2980b9;
+    }
+
+    .result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background: #e8f6fd;
+        display: none;
+    }
+
+    .formula {
+        font-family: "Computer Modern", serif;
+        font-style: italic;
+        color: #2c3e50;
+        text-align: center;
+        margin: 20px 0;
+        font-size: 1.2em;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .show {
+        display: block;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #dce4ec;
+    }
+
+    .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: #7f8c8d;
+        font-weight: bold;
+    }
+
+    .tab.active {
+        color: #3498db;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: -2px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Calculadora de Interés Simple y Compuesto</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('simple')">Interés Simple</button>
+            <button class="tab" onclick="switchTab('compound')">Interés Compuesto</button>
+        </div>
+
+        <div id="simple-calculator">
+            <div class="formula">
+                F = P(1 + in)
+            </div>
+            
+            <div class="calculator">
+                <h2>Calculadora de Interés Simple</h2>
+                
+                <div class="input-group">
+                    <label>Variable a encontrar:</label>
+                    <select id="variable-to-find-simple">
+                        <option value="F">Valor Futuro (F)</option>
+                        <option value="P">Valor Presente (P)</option>
+                        <option value="i">Tasa de Interés (i)</option>
+                        <option value="n">Tiempo (n)</option>
+                    </select>
+                </div>
+
+                <div id="inputs-container-simple"></div>
+                
+                <button onclick="calculateSimple()">Calcular</button>
+                
+                <div class="result" id="result-simple">
+                    <h3>Resultado:</h3>
+                    <div id="calculation-result-simple"></div>
+                    <div id="steps-simple"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="compound-calculator" style="display: none;">
+            <div class="formula">
+                F = P(1 + i)ⁿ
+            </div>
+            
+            <div class="calculator">
+                <h2>Calculadora de Interés Compuesto</h2>
+                
+                <div class="input-group">
+                    <label>Variable a encontrar:</label>
+                    <select id="variable-to-find-compound">
+                        <option value="F">Valor Futuro (F)</option>
+                        <option value="P">Valor Presente (P)</option>
+                        <option value="i">Tasa de Interés (i)</option>
+                        <option value="n">Tiempo (n)</option>
+                    </select>
+                </div>
+
+                <div id="inputs-container-compound"></div>
+                
+                <button onclick="calculateCompound()">Calcular</button>
+                
+                <div class="result" id="result-compound">
+                    <h3>Resultado:</h3>
+                    <div id="calculation-result-compound"></div>
+                    <div id="steps-compound"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+function switchTab(type) {
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.getElementById('simple-calculator').style.display = type === 'simple' ? 'block' : 'none';
+    document.getElementById('compound-calculator').style.display = type === 'compound' ? 'block' : 'none';
+}
+
+function updateInputs(type) {
+    const variableSelect = document.getElementById(`variable-to-find-${type}`);
+    const inputsContainer = document.getElementById(`inputs-container-${type}`);
+    const variableToFind = variableSelect.value;
+    
+    const allVariables = {
+        F: 'Valor Futuro ($)',
+        P: 'Valor Presente ($)',
+        i: 'Tasa de Interés Anual (%)',
+        n: 'Tiempo (años)'
+    };
+    
+    let inputsHTML = '';
+    for (let [key, label] of Object.entries(allVariables)) {
+        if (key !== variableToFind) {
+            inputsHTML += `
+                <div class="input-group">
+                    <label for="${key}-input-${type}">${label}:</label>
+                    <input type="number" id="${key}-input-${type}" step="any">
+                </div>
+            `;
+        }
+    }
+    
+    inputsContainer.innerHTML = inputsHTML;
+}
+
+function calculateSimple() {
+    calculate('simple');
+}
+
+function calculateCompound() {
+    calculate('compound');
+}
+
+function calculate(type) {
+    const variableToFind = document.getElementById(`variable-to-find-${type}`).value;
+    let F, P, i, n, result;
+    const resultDiv = document.getElementById(`result-${type}`);
+    const calculationResult = document.getElementById(`calculation-result-${type}`);
+    const steps = document.getElementById(`steps-${type}`);
+    
+    if (variableToFind !== 'F') F = parseFloat(document.getElementById(`F-input-${type}`).value);
+    if (variableToFind !== 'P') P = parseFloat(document.getElementById(`P-input-${type}`).value);
+    if (variableToFind !== 'i') i = parseFloat(document.getElementById(`i-input-${type}`).value) / 100;
+    if (variableToFind !== 'n') n = parseFloat(document.getElementById(`n-input-${type}`).value);
+
+    if ((variableToFind !== 'F' && isNaN(F)) || 
+        (variableToFind !== 'P' && isNaN(P)) || 
+        (variableToFind !== 'i' && isNaN(i)) || 
+        (variableToFind !== 'n' && isNaN(n))) {
+        alert('Por favor, complete todos los campos correctamente');
+        return;
+    }
+
+    let stepsHTML = '<h4>Procedimiento:</h4><ol>';
+
+    try {
+        if (type === 'simple') {
+            switch(variableToFind) {
+                case 'F':
+                    result = P * (1 + i * n);
+                    stepsHTML += `
+                        <li>Usando la fórmula F = P(1 + in)</li>
+                        <li>Sustituyendo los valores:
+                            <ul>
+                                <li>P = $${P}</li>
+                                <li>i = ${(i * 100)}%</li>
+                                <li>n = ${n} años</li>
+                            </ul>
+                        </li>
+                        <li>F = $${P} × (1 + ${i} × ${n})</li>
+                        <li>F = $${result.toFixed(2)}</li>
+                    `;
+                    break;
+                case 'P':
+                    result = F / (1 + i * n);
+                    stepsHTML += `
+                        <li>Despejando P de F = P(1 + in)</li>
+                        <li>P = F ÷ (1 + in)</li>
+                        <li>Sustituyendo valores:
+                            <ul>
+                                <li>F = $${F}</li>
+                                <li>i = ${(i * 100)}%</li>
+                                <li>n = ${n} años</li>
+                            </ul>
+                        </li>
+                        <li>P = $${result.toFixed(2)}</li>
+                    `;
+                    break;
+                case 'i':
+                    result = (F/P - 1) / n * 100;
+                    stepsHTML += `
+                        <li>Despejando i de F = P(1 + in)</li>
+                        <li>i = (F/P - 1) / n</li>
+                        <li>Sustituyendo valores:
+                            <ul>
+                                <li>F = $${F}</li>
+                                <li>P = $${P}</li>
+                                <li>n = ${n} años</li>
+                            </ul>
+                        </li>
+                        <li>i = ${result.toFixed(2)}%</li>
+                    `;
+                    break;
+                case 'n':
+                    result = (F/P - 1) / i;
+                    stepsHTML += `
+                        <li>Despejando n de F = P(1 + in)</li>
+                        <li>n = (F/P - 1) / i</li>
+                        <li>Sustituyendo valores:
+                            <ul>
+                                <li>F = $${F}</li>
+                                <li>P = $${P}</li>
+                                <li>i = ${(i * 100)}%</li>
+                            </ul>
+                        </li>
+                        <li>n = ${result.toFixed(2)} años</li>
+                    `;
+                    break;
+            }
+        } else {
+            switch(variableToFind) {
+                case 'F':
+                    result = P * Math.pow(1 + i, n);
+                    stepsHTML += `
+                        <li>Usando la fórmula F = P(1 + i)ⁿ</li>
+                        <li>Sustituyendo los valores:
+                            <ul>
+                                <li>P = $${P}</li>
+                                <li>i = ${(i * 100)}%</li>
+                                <li>n = ${n} años</li>
+                            </ul>
+                        </li>
+                        <li>F = $${P} × (1 + ${i})^${n}</li>
+                        <li>F = $${result.toFixed(2)}</li>
+                    `;
+                    break;
+                case 'P':
+                    result = F / Math.pow(1 + i, n);
+                    stepsHTML += `
+                        <li>Despejando P de F = P(1 + i)ⁿ</li>
+                        <li>P = F ÷ (1 + i)ⁿ</li>
+                        <li>Sustituyendo valores:
+                            <ul>
+                                <li>F = $${F}</li>
+                                <li>i = ${(i * 100)}%</li>
+                                <li>n = ${n} años</li>
+                            </ul>
+                        </li>
+                        <li>P = $${result.toFixed(2)}</li>
+                    `;
+                    break;
+                case 'i':
+                    result = (Math.pow(F/P, 1/n) - 1) * 100;
+                    stepsHTML += `
+                        <li>Despejando i de F = P(1 + i)ⁿ</li>
+                        <li>i = (F/P)^(1/n) - 1</li>
+                        <li>Sustituyendo valores:
+                            <ul>
+                                <li>F = $${F}</li>
+                                <li>P = $${P}</li>
+                                <li>n = ${n} años</li>
+                            </ul>
+                        </li>
+                        <li>i = ${result.toFixed(2)}%</li>
+                    `;
+                    break;
+                case 'n':
+                    result = Math.log(F/P) / Math.log(1 + i);
+                    stepsHTML += `
+                        <li>Despejando n de F = P(1 + i)ⁿ</li>
+                        <li>n = ln(F/P) ÷ ln(1 + i)</li>
+                        <li>Sustituyendo valores:
+                            <ul>
+                                <li>F = $${F}</li>
+                                <li>P = $${P}</li>
+                                <li>i = ${(i * 100)}%</li>
+                            </ul>
+                        </li>
+                        <li>n = ${result.toFixed(2)} años</li>
+                    `;
+                    break;
+            }
+        }
+
+        stepsHTML += '</ol>';
+        calculationResult.innerHTML = `<p>📊 ${getVariableName(variableToFind)}: ${formatResult(result, variableToFind)}</p>`;
+        steps.innerHTML = stepsHTML;
+        resultDiv.classList.add('show');
+    } catch (error) {
+        alert('Error en el cálculo. Por favor, verifique los valores ingresados.');
+    }
+}
+
+function getVariableName(variable) {
+    const names = {
+        'F': 'Valor Futuro',
+        'P': 'Valor Presente',
+        'i': 'Tasa de Interés',
+        'n': 'Tiempo'
+    };
+    return names[variable];
+}
+
+function formatResult(result, variable) {
+    if (variable === 'i') return result.toFixed(2) + '%';
+    if (variable === 'n') return result.toFixed(2) + ' años';
+    return '$' + result.toFixed(2);
+}
+
+// Initialize inputs
+document.getElementById('variable-to-find-simple').addEventListener('change', () => updateInputs('simple'));
+document.getElementById('variable-to-find-compound').addEventListener('change', () => updateInputs('compound'));
+updateInputs('simple');
+updateInputs('compound');
+</script>
+</body>
+</html>
